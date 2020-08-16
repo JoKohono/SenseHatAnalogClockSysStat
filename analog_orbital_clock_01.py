@@ -22,7 +22,8 @@ nightmode = False
 
 G = green = [0, 255, 0]
 Y = yellow = [255, 255, 0]
-Bl= blue_low = [0, 0, 100]
+y = yellow_low = [100, 100, 0]
+b = blue_low = [0, 0, 100]
 B = blue = [0, 0, 255]
 R = red = [255, 0, 0]
 W = white = [255, 255, 255]
@@ -47,37 +48,42 @@ min_true = 0  #will effectively be between 1 and 60
 min_LED_current = min_true*min_stripe_length/60
 
 #------------Hours-----------------------------------------------
-hour_true = 0
-hour_stripeX = [4,5,6,6,6,6,6,6,5,4,3,2,1,1,1,1,1,1,2,3]
-hour_stripeY = [1,1,1,2,3,4,5,6,6,6,6,6,6,5,4,3,2,1,1,1]
+hour_stripeX =      [3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7,7,7,7,7,6,5,4]
+hour_stripeY =      [7,7,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7]
+hour_stripe_color = [B,B,B,B,B,B,G,G,G,R,R,R,R,R,R,R,R,R,R,R,R,G,G,G,G,G,B,B]
 hour_stripe_length = len(hour_stripeX)
 hour_true = 0  #will effectively be between 1 and 24
 hour_LED_current = hour_true*hour_stripe_length/24
 
 
+    
 
 
 #--------Watchface and Maintenance---------------------------------------------
-watchface_orbit_day = [
-    R, R, R, R, R, R, R, R,
-    R, O, O, O, O, O, O, R,
-    R, O, O, O, O, O, O, R,
-    G, O, O, O, O, O, O, R,
-    G, O, O, O, O, O, O, G,
-    B, O, O, O, O, O, O, G,
-    B, O, O, O, O, O, O, G,
-    B, B, B, B, B, B, B, G, 
-    ]
-watchface_orbit_night = [
-    R, O, O, O, O, O, O, R,
-    O, O, O, O, O, O, O, O,
-    O, O, O, O, O, O, O, O,
-    O, O, O, O, O, O, O, O,
-    O, O, O, O, O, O, O, O,
-    O, O, O, O, O, O, O, O,
-    O, O, O, O, O, O, O, O,
-    B, O, O, O, O, O, O, G, 
-    ]
+
+def night_or_day():
+    localtime = time.localtime(time.time())
+    hour_true = localtime.tm_hour
+    if hour_true < 6 or hour_true > 21:
+        nightmode = True
+        s.low_light = True
+        G = green = [0, 100, 0]
+        Y = yellow = [100, 100, 0]
+        B = blue = [0, 0, 100]
+        R = red = [100, 0, 0]
+        W = white = [100, 100, 100]        
+    else:
+        nightmode = False
+        s.low_light = False
+        G = green = [0, 255, 0]
+        Y = yellow = [255, 255, 0]
+        y = yellow_low = [100, 100, 0]
+        b = blue_low = [0, 0, 100]
+        B = blue = [0, 0, 255]
+        R = red = [255, 0, 0]
+        W = white = [255, 255, 255]
+        P = pink = [255,105, 180]
+    
 
 def wipe_sec_stripe():
     for pixel in range(sec_stripe_length):
@@ -88,6 +94,38 @@ def min_wipe_stripe():
     for pixel in range(min_stripe_length):
         s.set_pixel(min_stripeX[pixel], min_stripeY[pixel], nothing)
     return()   
+
+def hour_wipe_stripe():
+    for pixel in range (hour_stripe_length):
+        s.set_pixel(hour_stripeX[pixel], hour_stripeY[pixel], hour_stripe_color[pixel])
+    return()
+
+def get_hour_pixel(hour_true):
+    pixel_1 = (0,0)
+    pixel_2 = (1,1)   #these coordinates are invalid. I'm returning this for pixel2 to tell the caller that there is no pixel_2
+    if hour_true < 10:
+        pixel_1 = (hour_stripeX[hour_true],hour_stripeY[hour_true])
+        return (pixel_1, pixel_2)
+    elif hour_true == 10:
+        pixel_1=(hour_stripeX[hour_true],hour_stripeY[hour_true])
+        pixel_2=(hour_stripeX[hour_true+1],hour_stripeY[hour_true+1])
+        return (pixel_1, pixel_2)
+    elif hour_true == 11:
+        pixel_1 = (hour_stripeX[hour_true+1],hour_stripeY[hour_true+1])
+        pixel_2=(hour_stripeX[hour_true+2],hour_stripeY[hour_true+2])
+        return (pixel_1, pixel_2)
+    elif hour_true == 12:
+        pixel_1 =(hour_stripeX[hour_true+2],hour_stripeY[hour_true+2])
+        pixel_2=(hour_stripeX[hour_true+3],hour_stripeY[hour_true+3])
+        return (pixel_1, pixel_2)    
+    elif hour_true == 13:
+        pixel_1 = (hour_stripeX[hour_true+3],hour_stripeY[hour_true+3])
+        pixel_2=(hour_stripeX[hour_true+4],hour_stripeY[hour_true+4])
+    elif hour_true > 13:
+        # add the 4 redundant top row pixel
+        pixel_1 = (hour_stripeX[hour_true+4],hour_stripeY[hour_true+4])
+        return (pixel_1, pixel_2)
+
 
 
 #--------------System-----------------------------------------
@@ -178,47 +216,55 @@ def update_system():
 
 #---------------------------------------------------------------------------------
 #------------- and execute... ----------------------------------------------------
-if not nightmode:
-    s.set_pixels(watchface_orbit_day)
-else:
-    s.set_pixels(watchface_orbit_night)
-    
+
 while True: 
+    for i in range(8):     #clear the entire display
+        for ii in range(8):
+            s.set_pixel(i, ii, nothing)
+    night_or_day()
+
+    hour_wipe_stripe()     #initialize the hour stripe
+    print("display cleared and hour ring initialized")
+
     localtime = time.localtime(time.time())
     hour_true = localtime.tm_hour
-    while hour_true < 23:
+    
+    while hour_true < 24:
+        hour_true = localtime.tm_hour
+        hour_LED_current = get_hour_pixel(hour_true)
+        print("true hour: ", hour_true, "     LED coord: ", hour_LED_current)
+      
+        #blank the hour_LED to give the SECONDS-loop a clean start with turning it back on
+        x = (hour_LED_current[0])[0]
+        y = (hour_LED_current[0])[1]
+        s.set_pixel(x, y, nothing)
+        print("blanked LED x,y now: ",x, y)
+        if hour_LED_current[1] != (1,1):
+            x = (hour_LED_current[1])[0]
+            y = (hour_LED_current[1])[1]
+            s.set_pixel(x, y, nothing)
+            print("detected a 2pixel and blanked 2ndLED x,y now: ",x, y)
+
+        
+        
+        #---- MINUTES LOOP ----------------------------------------------
         min_wipe_stripe()
         while min_true < 59:
             localtime = time.localtime(time.time())
             min_true = localtime.tm_min
-
-            #todo later: set low-light based on actual sunrise/sunset
-            if hour_true > 21 or hour_true < 6:
-                s.low_light = True
-            else:
-                s.low_light = False
-            #-------------------------------------------------------//
+            night_or_day()
 
             min_LED_current = int(min_true * (min_stripe_length / 60))
             min_stripe_X_LED = int(min_stripeX[min_LED_current])
             min_stripe_Y_LED = int(min_stripeY[min_LED_current])
-#            print(min_true, ": = LED: ", min_stripe_X_LED, " - ", min_stripe_Y_LED)
-
-            old_pixel0 = s.get_pixel((min_stripeX[min_LED_current]), min_stripeY[min_LED_current]) 
-            old_pixel1 = s.get_pixel((min_stripeX[min_LED_current-1]), min_stripeY[min_LED_current]-1) 
-#            old_pixel2 = s.get_pixel((min_stripeX[min_LED_current-2]), min_stripeY[min_LED_current]-2) 
-#            print("op0: ", old_pixel0)
-#            print("op1: ", old_pixel1)
-#            print("op2: ", old_pixel2)
-            s.set_pixel((min_stripeX[min_LED_current]), min_stripeY[min_LED_current], yellow) 
-#            s.set_pixel((min_stripeX[min_LED_current-2]), min_stripeY[min_LED_current-2], old_pixel2)       
-            time.sleep(sleeptime_watchtick/2)
-            s.set_pixel((min_stripeX[min_LED_current-1]), min_stripeY[min_LED_current-1], old_pixel1)
+            s.set_pixel((min_stripeX[min_LED_current]), min_stripeY[min_LED_current], nothing) 
+            s.set_pixel((min_stripeX[min_LED_current-1]), min_stripeY[min_LED_current-1], nothing) 
 
 
-
+            #---- SECONDS LOOP ----------------------------------------------
             sec_true = localtime.tm_sec
             while sec_true < 59:
+                #-----take care of SECONDS---------------
                 localtime = time.localtime(time.time())
                 sec_true = localtime.tm_sec
                 sec_LED_current = int(sec_true * (sec_stripe_length / 60))
@@ -229,25 +275,65 @@ while True:
                     s.set_pixel((sec_stripeX[sec_LED_old]), sec_stripeY[sec_LED_old], sec_pixel_color)
                 elif sec_LED_current < sec_LED_old:   # means: we must have a new minute
                     wipe_sec_stripe()
-                    
-                if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
-                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
-                else:
-                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
+
+#on comment for now to try to stop seconds from blinking
+#                 if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
+                s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
+#                 else:
+#                     s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
+
                 
+                #--now toggle on the hour-LED------------------
+                hour_LED_current = get_hour_pixel(hour_true)
+                x = (hour_LED_current[0])[0]
+                y = (hour_LED_current[0])[1]
+                if s.get_pixel(x, y) == [0, 0, 0]:
+                    was_off = True
+                else:
+                    was_off = False
+                
+                if was_off:
+                    s.set_pixel(x, y, pink)          
+#                    s.set_pixel(x, y, hour_stripe_color[hour_true])          
+                    print("turned on hour LED x,y now: ",x, y)
+                    if hour_LED_current[1] != (1,1):
+                        x = (hour_LED_current[1])[0]
+                        y = (hour_LED_current[1])[1]
+                        s.set_pixel(x, y, pink)      
+#                        s.set_pixel(x, y, hour_stripe_color[hour_true])      
+                        print("turned on 2nd hour LED x,y now: ",x, y)
+                else:
+                    s.set_pixel(x, y, nothing)
+                    if hour_LED_current[1] != (1,1):
+                        x = (hour_LED_current[1])[0]
+                        y = (hour_LED_current[1])[1]
+                        s.set_pixel(x, y, nothing)
+                    
+                #------and also blink the minute pixel
+                if s.get_pixel((min_stripeX[min_LED_current]), min_stripeY[min_LED_current]) != [0,0,0]:
+                    s.set_pixel((min_stripeX[min_LED_current]), min_stripeY[min_LED_current], nothing)
+                else:
+                    s.set_pixel((min_stripeX[min_LED_current]), min_stripeY[min_LED_current], pink)                                    
+                        
+                
+                #------update the SYSTEM LEDs-----------
                 update_system()
                 time.sleep(sleeptime_watchtick/2)
                 
-                if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
-                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
-                else:
-                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
-                time.sleep(sleeptime_watchtick/4)
-                if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
-                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
-                else:
-                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
+                #-------part of seconds blinking---------
+#                 if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
+#                     s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
+#                 else:
+#                     s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
+                time.sleep(sleeptime_watchtick/2)
+#                 if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
+#                     s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
+#                 else:
+#                     s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
                 sec_LED_old = sec_LED_current
+                print("sec: ", sec_true)
+                
+
             #to avoid unnecessary loops in the minutes and hours
             time.sleep(sleeptime_watchtick/2)
             sec_true = 0
