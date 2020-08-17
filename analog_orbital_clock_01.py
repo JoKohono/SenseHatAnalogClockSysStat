@@ -32,8 +32,10 @@ P = pink = [255,105, 180]
 
 
 #------------Seconds------------------------------------
-sec_stripeX = [2, 3, 4, 5]
-sec_stripeY = [5, 5, 5, 5]
+# sec_stripeX = [2, 3, 4, 5]
+# sec_stripeY = [5, 5, 5, 5]
+sec_stripeX = [3, 4, 2, 5]
+sec_stripeY = [5, 5, 4, 4]
 sec_stripe_length = len(sec_stripeX)
 sec_true = 0  #will effectively be between 1 and 60
 sec_LED_current = sec_true*sec_stripe_length/60
@@ -121,6 +123,7 @@ def get_hour_pixel(hour_true):
     elif hour_true == 13:
         pixel_1 = (hour_stripeX[hour_true+3],hour_stripeY[hour_true+3])
         pixel_2=(hour_stripeX[hour_true+4],hour_stripeY[hour_true+4])
+        return (pixel_1, pixel_2)
     elif hour_true > 13:
         # add the 4 redundant top row pixel
         pixel_1 = (hour_stripeX[hour_true+4],hour_stripeY[hour_true+4])
@@ -285,6 +288,7 @@ while True:
                 
                 #--now toggle on the hour-LED------------------
                 hour_LED_current = get_hour_pixel(hour_true)
+                print("again: the current hour is: ", hour_LED_current)
                 x = (hour_LED_current[0])[0]
                 y = (hour_LED_current[0])[1]
                 if s.get_pixel(x, y) == [0, 0, 0]:
