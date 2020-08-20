@@ -5,8 +5,14 @@ from sense_hat import SenseHat
 import time, random
 import psutil
 import platform
+import inspect
 from gpiozero import CPUTemperature
 from datetime import datetime
+import sys
+
+
+#print(f"Name of the script      : {sys.argv[0]=}")
+#print(f"Arguments of the script : {sys.argv[1:]=}")
 
 #log_level = ("NONE", "INFO", "ERROR", "DEBUG")
 loglevel_deep = True
@@ -14,14 +20,15 @@ tick_launch = time.time()
 def ticker():
     delta_t = time.time() - tick_launch
     ticker = (f'{delta_t:.3f} :  ')
+    debug_time = time.localtime(time.time())
+    ticker = str(ticker)+(" ")+str(time.asctime())+(" ")
     return ticker
 
 
 sleeptime_l=1.0
 sleeptime_m=sleeptime_l/2
-sleeptime_s=sleeptime_m/2
+sleeptime_s=sleeptime_l/4
 sleeptime_watchtick = 1
-
 
 
 
@@ -43,9 +50,6 @@ P = pink = [255,105, 180]
 
 
 #------------Seconds------------------------------------
-# 4-bar left to right-------
-# sec_stripeX = [2, 3, 4, 5]
-# sec_stripeY = [5, 5, 5, 5]
 # smiley center to out 4 pixel
 sec_stripeX = [3, 4, 2, 5]
 sec_stripeY = [5, 5, 4, 4]
@@ -70,7 +74,7 @@ min_LED_current = min_true*min_stripe_length/60
 #------------Hours-----------------------------------------------
 hour_stripeX =      [3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7,7,7,7,7,6,5,4]
 hour_stripeY =      [7,7,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7]
-hour_stripe_color = [B,B,B,B,B,B,G,G,G,R,R,R,R,R,R,R,R,R,R,R,R,G,G,G,G,G,B,B]
+hour_stripe_color = [B,B,B,B,B,B,G,G,Y,R,R,R,R,R,R,R,R,R,R,R,Y,G,G,G,G,G,B,B]
 hour_stripe_length = len(hour_stripeX)
 hour_true = 0  #will effectively be between 1 and 24
 hour_LED_current = hour_true*hour_stripe_length/24
@@ -80,6 +84,7 @@ hour_LED_current = hour_true*hour_stripe_length/24
 #--------Watchface and Maintenance---------------------------------------------
 
 def night_or_day():
+    tfn = inspect.currentframe().f_code.co_name
     localtime = time.localtime(time.time())
     hour_true = localtime.tm_hour
     if hour_true < 6 or hour_true > 21:
@@ -90,7 +95,7 @@ def night_or_day():
         B = blue = [0, 0, 100]
         R = red = [100, 0, 0]
         W = white = [100, 100, 100]
-        if loglevel_deep: print(ticker(), "--night-or-day says: night")
+        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: night")
     else:
         nightmode = False
         s.low_light = False
@@ -102,65 +107,66 @@ def night_or_day():
         R = red = [255, 0, 0]
         W = white = [255, 255, 255]
         P = pink = [255,105, 180]
-        if loglevel_deep: print(ticker(), "--night-or-day says: day")    
+        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: day")    
 
 def wipe_sec_stripe():
+    tfn=inspect.currentframe().f_code.co_name 
     for pixel in range(sec_stripe_length):
         s.set_pixel(sec_stripeX[pixel], sec_stripeY[pixel], nothing)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "wiped the second-strip")
     return()
-    if loglevel_deep: print(ticker(),"--wipe_sec_stripe has wiped the second-strip")
 
 def min_wipe_stripe():
+    tfn=inspect.currentframe().f_code.co_name 
     for pixel in range(min_stripe_length):
         s.set_pixel(min_stripeX[pixel], min_stripeY[pixel], nothing)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "min_wipe_stripe has wiped the minute-strip")
     return()
-    if loglevel_deep: print(ticker(),"--min_wipe_stripe has wiped the minute-strip")
 
 def hour_wipe_stripe():
+    tfn=inspect.currentframe().f_code.co_name 
     for pixel in range (hour_stripe_length):
         s.set_pixel(hour_stripeX[pixel], hour_stripeY[pixel], hour_stripe_color[pixel])
+    if loglevel_deep: print(ticker(),"(",tfn,")", "hour_wipe_stripe has initialized the hour-strip")
     return()
-    if loglevel_deep: print(ticker(),"--hour_wipe_stripe has initialized the hour-strip")
-    
-def get_hour_pixel(hour_true):
+
+def get_hour_pixel():
+    tfn=inspect.currentframe().f_code.co_name 
     pixel_1 = (0,0)
     pixel_2 = (1,1)   #these coordinates are invalid. I'm returning this for pixel2 to tell the caller that there is no pixel_2
+    localtime = time.localtime(time.time())
+    hour_true = localtime.tm_hour
     if hour_true < 10:
         pixel_1 = (hour_stripeX[hour_true],hour_stripeY[hour_true])
-        return (pixel_1, pixel_2)
     elif hour_true == 10:
         pixel_1=(hour_stripeX[hour_true],hour_stripeY[hour_true])
         pixel_2=(hour_stripeX[hour_true+1],hour_stripeY[hour_true+1])
-        return (pixel_1, pixel_2)
     elif hour_true == 11:
         pixel_1 = (hour_stripeX[hour_true+1],hour_stripeY[hour_true+1])
         pixel_2=(hour_stripeX[hour_true+2],hour_stripeY[hour_true+2])
-        return (pixel_1, pixel_2)
     elif hour_true == 12:
         pixel_1 =(hour_stripeX[hour_true+2],hour_stripeY[hour_true+2])
         pixel_2=(hour_stripeX[hour_true+3],hour_stripeY[hour_true+3])
-        return (pixel_1, pixel_2)    
     elif hour_true == 13:
         pixel_1 = (hour_stripeX[hour_true+3],hour_stripeY[hour_true+3])
         pixel_2=(hour_stripeX[hour_true+4],hour_stripeY[hour_true+4])
-        return (pixel_1, pixel_2)
     elif hour_true > 13:
         # add the 4 redundant top row pixel
         pixel_1 = (hour_stripeX[hour_true+4],hour_stripeY[hour_true+4])
-        return (pixel_1, pixel_2)
-    if loglevel_deep: print(ticker(),"--get_hour_pixel(s) returned from function: ", pixel_1, pixel_2)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "hour pixel(s): ", pixel_1, pixel_2)
+    return (pixel_1, pixel_2)
 
 
 #--------------System-----------------------------------------
 CPU_pixel = (2,2)
-IO_pixel  = (5,2)
+IO_pixel = (5,2)
+#IO_pixel_rx = (2,2) 
+#IO_pixel_tx = (5,2)
 
-
-CPU_load_hard_high = 85
-CPU_load_high = 60
-CPU_load_medium = 25
+CPU_load_hard_high = 90
+CPU_load_high = 70
+CPU_load_medium = 35
 CPU_load_low = 10
-
 
 CPU_f_overclock = 1500
 CPU_f_full = 800
@@ -168,21 +174,33 @@ CPU_f_reduced_medium = 650
 CPU_f_minimum = 600 
 
 Temp_hard_high = 80
-Temp_high = 55
+Temp_high = 54
 Temp_medium = 45
 
-Mem_hard_high = 75  #numbers are percent memory utilization
-Mem_high =      35
-Mem_medium =    10
+Mem_hard_high = 90  #numbers are percent memory utilization
+Mem_high =      75
+Mem_medium =    35
 
-eth_color = white
-wlan0_color = white
-wg0_color = white
-IO_color = white
+IO_sent = 0
+IO_received = 0
+delta_IO_rx_red = 100
+delta_IO_rx_yellow = 5000
+delta_IO_rx_green = 15000
+delta_IO_rx_blue =500000
 
+delta_IO_tx_red = 100
+delta_IO_tx_yellow = 5000
+delta_IO_tx_green = 15000
+delta_IO_tx_blue =500000
+
+delta_IO_red = 100
+delta_IO_yellow = 5000
+delta_IO_green = 15000
+delta_IO_blue =500000
 
 def update_system():
-    #System Pixel----------------------------------------------
+    tfn=inspect.currentframe().f_code.co_name 
+    #CPU Pixel----------------------------------------------
     #CPU load----------------------------
     CPU_load = int(psutil.cpu_percent())
     if CPU_load  > CPU_load_hard_high:
@@ -193,7 +211,7 @@ def update_system():
         CPU_load_color = green
     else:
         CPU_load_color = blue
-        if loglevel_deep: print(ticker(),"--cpu load is: ", CPU_load)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "CPU load is: ", CPU_load)
     
     #CPU frequency-----------------------
     cpufreq = psutil.cpu_freq()
@@ -205,7 +223,7 @@ def update_system():
         CPU_f_color = green
     else:
         CPU_f_color = blue
-    if loglevel_deep: print(ticker(),"--cpu f is: ", cpufreq.current)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "CPU freq. is: ", cpufreq.current)
 
     #CPU temperature---------------------
     cpu = CPUTemperature()
@@ -217,7 +235,7 @@ def update_system():
         Temp_color = green
     else:
         Temp_color = blue
-    if loglevel_deep: print(ticker(),"--cpu temperature is: ", cpu.temperature)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "CPU temp. is: ", cpu.temperature)
         
     #CPU Memory--------------------------
     svmem = psutil.virtual_memory()
@@ -229,22 +247,59 @@ def update_system():
         Mem_color = green
     else:
         Mem_color = blue
-    if loglevel_deep: print(ticker(),"--memory utilization is: ", svmem.percent)
- 
-    if (Mem_color == red) or (Temp_color == red) or ((CPU_f_color == blue) and (CPU_load_color == red)):
+    if loglevel_deep: print(ticker(),"(",tfn,")", "Memory utilization is: ", svmem.percent)
+
+    # determine the aggregated single LED for CPU: 
+    if (svmem.percent > Mem_hard_high) or (cpu.temperature > Temp_hard_high) or ((cpufreq.current < CPU_f_full) and (CPU_load > CPU_load_hard_high)):
         CPU_color = red
-    elif (CPU_load < CPU_load_low) and (cpu.temperature < Temp_medium) and (svmem.percent < Mem_medium):
+    elif (svmem.percent > Mem_high) or (cpu.temperature > Temp_high) or ((cpufreq.current == CPU_f_full) and (CPU_load > CPU_load_high)):
+        CPU_color = yellow
+    elif (CPU_load < CPU_load_medium) and (cpu.temperature < Temp_high) and (svmem.percent < Mem_medium):
         CPU_color = blue
     else:
         CPU_color = green
 
-    if loglevel_deep:
-            if loglevel_deep: print(ticker(), "--the CPU LED is: ", CPU_pixel, CPU_color)
-            if loglevel_deep: print(ticker(), "--the IO-pixel is: ", IO_pixel, IO_color)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "the CPU LED is: ", CPU_pixel, CPU_color)
     s.set_pixel(CPU_pixel[0], CPU_pixel[1], CPU_color)               
+
+
+    global IO_sent
+    global IO_received
+
+    IO_sent_old = IO_sent
+    IO_received_old = IO_received
+    net_io = psutil.net_io_counters()
+    IO_sent = net_io.bytes_sent
+    IO_received = net_io.bytes_recv
+    delta_IO_tx = IO_sent - IO_sent_old
+    delta_IO_rx = IO_received - IO_received_old
+    delta_IO = delta_IO_rx + delta_IO_tx
+#    if loglevel_deep: print(ticker(), "delta sent: ", delta_IO_tx)
+#    if loglevel_deep: print(ticker(), "delta recv: ", delta_IO_rx)
+    if loglevel_deep: print(ticker(),"(",tfn,")", "delta IO: ", delta_IO)
+
+
+    if delta_IO > delta_IO_blue: IO_color = blue
+    elif delta_IO > delta_IO_green: IO_color = green
+    elif delta_IO > delta_IO_yellow: IO_color = yellow
+    elif delta_IO > delta_IO_red: IO_color = red
+    else: IO_color = white
     s.set_pixel(IO_pixel[0], IO_pixel[1], IO_color)
-    return()    
-    #End of System Pixel Block------------    
+    if loglevel_deep: print(ticker(),"(",tfn,")", "IO_color is: ", IO_color)
+
+#     if delta_IO_rx > delta_IO_rx_blue: IO_rx_color = white
+#     elif delta_IO_rx > delta_IO_rx_green: IO_rx_color = green
+#     elif delta_IO_rx > delta_IO_rx_yellow: IO_rx_color = yellow
+#     elif delta_IO_rx > delta_IO_rx_red: IO_rx_color = red
+#     else: IO_rx_color = red
+#     if loglevel_deep: print(ticker(), "-- IO_rx_coloer is: ", IO_rx_color)
+#     s.set_pixel(IO_pixel_rx[0], IO_pixel_rx[1], IO_rx_color)    
+
+    return() 
+
+
+
+#End of System Pixel Block------------    
 
 
 #---------------------------------------------------------------------------------
@@ -265,8 +320,9 @@ while True:
     while hour_true < 24:
         hour_wipe_stripe()     #initialize the hour stripe
         if loglevel_deep: print(ticker(),"display cleared and hour ring initialized from inside 24hr loop")
-        hour_true = localtime.tm_hour
-        hour_LED_current = get_hour_pixel(hour_true)
+        localtime = time.localtime(time.time())
+        hour_true = localtime.tm_hour        
+        hour_LED_current = get_hour_pixel()
         if loglevel_deep: print(ticker(),"true hour: ", hour_true, "  LED coordinates: ", hour_LED_current)
       
         #blank the hour_LED to give the SECONDS-loop a clean start with turning it back on
@@ -320,7 +376,7 @@ while True:
 
                 
                 #--now toggle on the hour-LED------------------
-                hour_LED_current = get_hour_pixel(hour_true)
+                hour_LED_current = get_hour_pixel()
                 if loglevel_deep: print(ticker(),"toggling the hour-LED now:")
                 if loglevel_deep: print(ticker(),"the current hour: ", hour_LED_current, "vs. true hour: ",hour_true)
                 x = (hour_LED_current[0])[0]
@@ -333,13 +389,13 @@ while True:
                 if was_off:
                     s.set_pixel(x, y, pink)          
 #                    s.set_pixel(x, y, hour_stripe_color[hour_true])          
-                    if loglevel_deep: print(ticker(),"turned on hour LED x,y now: ",x, y)
+                    if loglevel_deep: print(ticker(),"turned ON  hour LED x,y now: ",x, y)
                     if hour_LED_current[1] != (1,1):
                         x = (hour_LED_current[1])[0]
                         y = (hour_LED_current[1])[1]
                         s.set_pixel(x, y, pink)      
 #                        s.set_pixel(x, y, hour_stripe_color[hour_true])      
-                        if loglevel_deep: print(ticker(),"turned on 2nd hour LED x,y now: ",x, y)
+                        if loglevel_deep: print(ticker(),"turned ON  2nd hour LED x,y now: ",x, y)
                 else:
                     s.set_pixel(x, y, nothing)
                     if loglevel_deep: print(ticker(),"turned OFF hour LED x,y now: ",x, y)
