@@ -84,7 +84,7 @@ while True:
     events = sense.stick.get_events()    
     for event in events:
         if event.action == "pressed":
-            initiate_reboot() #doesn't pull the trigger though
+            initiate_reboot() #doesn't pull the trigger yet - just the countdown
             call('sudo reboot now', shell=True)
 
 #for event in events:

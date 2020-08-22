@@ -8,6 +8,7 @@ import platform
 import inspect
 from gpiozero import CPUTemperature
 from datetime import datetime
+from subprocess import call
 import sys
 
 
@@ -19,7 +20,7 @@ loglevel_deep = True
 tick_launch = time.time()
 def ticker():
     delta_t = time.time() - tick_launch
-    ticker = (f'{delta_t:.3f} :  ')
+    ticker = (f'{delta_t:.3f}:')
     debug_time = time.localtime(time.time())
     ticker = str(ticker)+(" ")+str(time.asctime())+(" ")
     return ticker
@@ -39,12 +40,15 @@ s.rotation = 90
 nightmode = False
 
 G = green = [0, 255, 0]
+g = green_low = [0, 100, 0]
 Y = yellow = [255, 255, 0]
 y = yellow_low = [100, 100, 0]
-b = blue_low = [0, 0, 100]
 B = blue = [0, 0, 255]
+b = blue_low = [0, 0, 100]
 R = red = [255, 0, 0]
+r = red_low = [100, 0, 0]
 W = white = [255, 255, 255]
+w = white_low = [100, 100, 100]
 O = nothing = [0,0,0]
 P = pink = [255,105, 180]
 
@@ -164,7 +168,7 @@ IO_pixel = (5,2)
 #IO_pixel_tx = (5,2)
 
 CPU_load_hard_high = 90
-CPU_load_high = 70
+CPU_load_high = 60
 CPU_load_medium = 35
 CPU_load_low = 10
 
@@ -239,6 +243,10 @@ def update_system():
         
     #CPU Memory--------------------------
     svmem = psutil.virtual_memory()
+    if svmem.percent > 95:
+        tfn=inspect.currentframe().f_code.co_name
+        if loglevel_deep: print(ticker(),"(",tfn,")", "system will be rebootet because of low memory")
+        call('sudo reboot now', shell=True)
     if svmem.percent  >  Mem_hard_high:
         Mem_color = red
     elif svmem.percent   >  Mem_high:
