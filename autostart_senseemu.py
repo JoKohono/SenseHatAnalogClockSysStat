@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # [] <>
-from sense_hat import SenseHat
-#from sense_emu import SenseHat
+#from sense_hat import SenseHat
+from sense_emu import SenseHat
 import time, random
 import psutil
 import platform
