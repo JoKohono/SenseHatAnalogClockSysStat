@@ -16,7 +16,7 @@ import sys
 #print(f"Arguments of the script : {sys.argv[1:]=}")
 
 #log_level = ("NONE", "INFO", "ERROR", "DEBUG")
-loglevel_deep = True
+loglevel_deep = False
 tick_launch = time.time()
 def ticker():
     delta_t = time.time() - tick_launch
@@ -57,7 +57,7 @@ P = pink = [255,105, 180]
 # smiley center to out 4 pixel
 sec_stripeX = [3, 4, 2, 5]
 sec_stripeY = [5, 5, 4, 4]
-sec_stripe_pixelcolor = [blue, green, yellow, red]
+sec_stripe_pixelcolor = [B, G, Y, ]
 # symmetric smiley center to out 2 twice per minute
 #sec_stripeX = [3, 4, 2, 5, 3, 4, 2, 5]
 #sec_stripeY = [5, 5, 4, 4, 5, 5, 5, 5]
@@ -66,7 +66,7 @@ sec_stripe_length = len(sec_stripeX)
 sec_true = 0  #will effectively be between 1 and 60
 sec_LED_current = sec_true*sec_stripe_length/60
 sec_LED_old = 0
-sec_pixel_color = green
+sec_pixel_color = G
 
 #------------Minutes-----------------------------------
 min_stripeX = [4,5,6,6,6,6,6,6,5,4,3,2,1,1,1,1,1,1,2,3]
@@ -76,9 +76,11 @@ min_true = 0  #will effectively be between 1 and 60
 min_LED_current = min_true*min_stripe_length/60
 
 #------------Hours-----------------------------------------------
-hour_stripeX =      [3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7,7,7,7,7,6,5,4]
-hour_stripeY =      [7,7,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7]
-hour_stripe_color = [B,B,B,B,B,B,G,G,Y,R,R,R,R,R,R,R,R,R,R,R,Y,G,G,G,G,G,B,B]
+hour_stripeX =            [3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7,7,7,7,7,6,5,4]
+hour_stripeY =            [7,7,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7]
+hour_stripe_color_day =   [B,B,B,B,B,B,G,G,Y,R,R,R,R,R,R,R,R,R,R,R,Y,G,G,G,G,G,B,B]
+hour_stripe_color_night = [O,O,O,b,O,O,O,O,O,O,r,O,O,O,O,O,O,r,O,O,O,O,O,O,g,O,O,O]
+hour_stripe_color = hour_stripe_color_day
 hour_stripe_length = len(hour_stripeX)
 hour_true = 0  #will effectively be between 1 and 24
 hour_LED_current = hour_true*hour_stripe_length/24
@@ -91,27 +93,19 @@ def night_or_day():
     tfn = inspect.currentframe().f_code.co_name
     localtime = time.localtime(time.time())
     hour_true = localtime.tm_hour
+#    hour_true = 23  #to force night mode for testing purpose
     if hour_true < 6 or hour_true > 21:
         nightmode = True
         s.low_light = True
-        G = green = [0, 100, 0]
-        Y = yellow = [100, 100, 0]
-        B = blue = [0, 0, 100]
-        R = red = [100, 0, 0]
-        W = white = [100, 100, 100]
+        hour_stripe_color = hour_stripe_color_night
         if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: night")
+        return(hour_stripe_color)
     else:
         nightmode = False
         s.low_light = False
-        G = green = [0, 255, 0]
-        Y = yellow = [255, 255, 0]
-        y = yellow_low = [100, 100, 0]
-        b = blue_low = [0, 0, 100]
-        B = blue = [0, 0, 255]
-        R = red = [255, 0, 0]
-        W = white = [255, 255, 255]
-        P = pink = [255,105, 180]
-        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: day")    
+        hour_stripe_color = hour_stripe_color_day
+        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: day")
+        return(hour_stripe_color)
 
 def wipe_sec_stripe():
     tfn=inspect.currentframe().f_code.co_name 
@@ -317,7 +311,8 @@ while True:
     for i in range(8):     #clear the entire display
         for ii in range(8):
             s.set_pixel(i, ii, nothing)
-    night_or_day()
+    time.sleep(sleeptime_m)      
+    hour_stripe_color=night_or_day()
 
 #    hour_wipe_stripe()     #initialize the hour stripe
 #    if loglevel_deep: print(ticker(),"display cleared and hour ring initialized before going into 24-hour loop")
@@ -352,7 +347,7 @@ while True:
             localtime = time.localtime(time.time())
             min_true = localtime.tm_min
             if loglevel_deep: print(ticker(),"beginning of minute-loop, showing min_true: ", min_true)
-            night_or_day()
+            hour_stripe_color=night_or_day()
 
             min_LED_current = int(min_true * (min_stripe_length / 60))
             min_stripe_X_LED = int(min_stripeX[min_LED_current])
