@@ -2,7 +2,7 @@
 
 Why - what is that about?
 
-- I'd like to learn python, git, 
+- I'd like to learn python and work with git and GitHub across my RPis, Mac, iPad 
 - Want to put the SenseHat to use: look nice - be a clock - and tell the system status of the Pi
 - I have a RPi4 and a SenseHat that I'd like to run in headless mode with following main function:
   - Wireguard VPN (not (yet) relevant here)
