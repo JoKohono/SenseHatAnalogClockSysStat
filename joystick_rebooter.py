@@ -67,7 +67,7 @@ def initiate_reboot():
 ####
 
 while True:
-    exec(open("/home/pi/SenseHat/analog_orbital_clock.py").read())
+#    exec(open("/home/pi/SenseHat/analog_orbital_clock.py").read())
     sense.set_pixels(ping())
     time.sleep(beatpause)
     sense.set_rotation(90)
