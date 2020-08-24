@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 # [] <>
+# non-sensical insignificant line 2020-08-23 19:17h
 from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD, ACTION_RELEASED
-#from sense_emu import SenseHat
-import time, random
+# from sense_emu import SenseHat
+import time
+# import random
 import psutil
 import platform
 import inspect
@@ -12,23 +14,25 @@ from subprocess import call
 import sys
 
 
-#print(f"Name of the script      : {sys.argv[0]=}")
-#print(f"Arguments of the script : {sys.argv[1:]=}")
+# print(f"Name of the script      : {sys.argv[0]=}")
+# print(f"Arguments of the script : {sys.argv[1:]=}")
 
-#log_level = ("NONE", "INFO", "ERROR", "DEBUG")
+# log_level = ("NONE", "INFO", "ERROR", "DEBUG")
 loglevel_deep = True
 tick_launch = time.time()
+
+
 def ticker():
     delta_t = time.time() - tick_launch
-    ticker = (f'{delta_t:.3f}:')
+    ticker_x = f'{delta_t:.3f}:'
     debug_time = time.localtime(time.time())
-    ticker = str(ticker)+(" ")+str(time.asctime())+(" ")
-    return ticker
+    ticker_x = str(ticker_x)+(" ")+str(time.asctime())+(" ")
+    return ticker_x
 
 
-sleeptime_l=1.0
-sleeptime_m=sleeptime_l/2
-sleeptime_s=sleeptime_l/4
+sleeptime_l = 1.0
+sleeptime_m = sleeptime_l/2
+sleeptime_s = sleeptime_l/4
 sleeptime_watchtick = 1
 
 
@@ -68,14 +72,14 @@ sec_LED_current = sec_true*sec_stripe_length/60
 sec_LED_old = 0
 sec_pixel_color = G
 
-#------------Minutes-----------------------------------
+# ------------Minutes-----------------------------------
 min_stripeX = [4,5,6,6,6,6,6,6,5,4,3,2,1,1,1,1,1,1,2,3]
 min_stripeY = [1,1,1,2,3,4,5,6,6,6,6,6,6,5,4,3,2,1,1,1]
 min_stripe_length = len(min_stripeX)
 min_true = 0  #will effectively be between 1 and 60
 min_LED_current = min_true*min_stripe_length/60
 
-#------------Hours-----------------------------------------------
+# ------------Hours-----------------------------------------------
 hour_stripeX =            [3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7,7,7,7,7,6,5,4]
 hour_stripeY =            [7,7,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7]
 hour_stripe_color_day =   [B,B,B,B,B,B,G,G,Y,R,R,R,R,R,R,R,R,R,R,R,Y,G,G,G,G,G,B,B]
@@ -300,7 +304,8 @@ def update_system():
     return() 
 #End of System Pixel Block------------    
 
-#----------- Joystick & Rebooting -----------
+# ----------- Joystick & Rebooting -----------
+
 
 def initiate_reboot():
     s.show_message("Reboot in", back_colour= blue)
@@ -311,24 +316,20 @@ def initiate_reboot():
     time.sleep(1)
     s.show_letter("1", back_colour= blue)
     time.sleep(1)
-    
+
+
 def check_joystick():
-    events = s.stick.get_events()    
+    tfn = inspect.currentframe().f_code.co_name
+    events = s.stick.get_events()
     for event in events:
         if event.action == "pressed":
-            initiate_reboot() #doesn't pull the trigger yet - just the countdown
+            if loglevel_deep: print(ticker(), "(", tfn, ")", "joystick-pressed-event detected and will reboot now")
+            initiate_reboot()   # doesn't pull the trigger yet - just the countdown
             call('sudo reboot now', shell=True)
 
 
-
-
-
-
-
-
-#---------------------------------------------------------------------------------
-#------------- and execute... ----------------------------------------------------
-
+# -------------- Main Program -----------------------------------------------------
+# ------------- and execute... ----------------------------------------------------
 while True: 
     for i in range(8):     #clear the entire display
         for ii in range(8):

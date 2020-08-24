@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # [] <>
-from sense_hat import SenseHat
+from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD, ACTION_RELEASED
 #from sense_emu import SenseHat
 import time, random
 import psutil
@@ -16,7 +16,7 @@ import sys
 #print(f"Arguments of the script : {sys.argv[1:]=}")
 
 #log_level = ("NONE", "INFO", "ERROR", "DEBUG")
-loglevel_deep = False
+loglevel_deep = True
 tick_launch = time.time()
 def ticker():
     delta_t = time.time() - tick_launch
@@ -298,10 +298,32 @@ def update_system():
 #     s.set_pixel(IO_pixel_rx[0], IO_pixel_rx[1], IO_rx_color)    
 
     return() 
-
-
-
 #End of System Pixel Block------------    
+
+#----------- Joystick & Rebooting -----------
+
+def initiate_reboot():
+    s.show_message("Reboot in", back_colour= blue)
+    time.sleep(1)
+    s.show_letter("3", back_colour= blue)
+    time.sleep(1)
+    s.show_letter("2", back_colour= blue)
+    time.sleep(1)
+    s.show_letter("1", back_colour= blue)
+    time.sleep(1)
+    
+def check_joystick():
+    events = s.stick.get_events()    
+    for event in events:
+        if event.action == "pressed":
+            initiate_reboot() #doesn't pull the trigger yet - just the countdown
+            call('sudo reboot now', shell=True)
+
+
+
+
+
+
 
 
 #---------------------------------------------------------------------------------
@@ -360,6 +382,7 @@ while True:
             sec_true = localtime.tm_sec
             while sec_true < 59:
                 #-----take care of SECONDS---------------
+                check_joystick()
                 localtime = time.localtime(time.time())
                 sec_true = localtime.tm_sec
                 sec_LED_current = int(sec_true * (sec_stripe_length / 60))
