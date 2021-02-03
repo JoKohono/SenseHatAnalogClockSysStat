@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 # [] <>
-# non-sensical insignificant line 2020-08-23 19:17h
+# non-sensical insignificant line 2021-02-02: getting back into coding...
+# ...and (trying to) set up my RPi4 freshly after its devastating crash in November.
+# writing these lines on my Mac and if these go up to github and eventually come down to the RPI4: mission accomplished
+
 from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD, ACTION_RELEASED
 # from sense_emu import SenseHat
 import time
