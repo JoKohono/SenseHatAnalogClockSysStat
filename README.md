@@ -8,7 +8,7 @@ Why - what is that about?
   -- in headless mode, show important system status info (CPU, Memory utilization, temp, I/O status) 
   -- use the joystick to control the RPi: start/stop the watch, reboot the Pi, turn the VPN on/off...
   
-- My RPi4 with the SenseHat is running the additional (notable, relevant) SW:
+- My RPi4 with the SenseHat is running the additional (notable/relevant) SW:
   - Wireguard VPN (client and server modes)
   - OpenVPN (client mode)
   - Pi-Hole DNS filter with "unbound"
