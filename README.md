@@ -2,11 +2,17 @@
 
 Why - what is that about?
 
-- I'd like to learn python and work with git and GitHub across my RPis, Mac, iPad 
-- Want to put the SenseHat to use: look nice - be a clock - and tell the system status of the Pi
-- I have a RPi4 and a SenseHat that I'd like to run in headless mode with following main function:
-  - Wireguard VPN (not (yet) relevant here)
-  - NAS for my home network (not (yet) relevant here)
+- I'd like to learn python and work with git and GitHub across my RPis, Mac, iPad and Windows PC 
+- Want to put the SenseHat to use for input and output functions: 
+  -- show a nice and innovative clock face on the 8x8 led matrix
+  -- in headless mode, show important system status info (CPU, Memory utilization, temp, I/O status) 
+  -- use the joystick to control the RPi: start/stop the watch, reboot the Pi, turn the VPN on/off...
+  
+- My RPi4 with the SenseHat is running the additional (notable, relevant) SW:
+  - Wireguard VPN (client and server modes)
+  - OpenVPN (client mode)
+  - Pi-Hole DNS filter with "unbound"
+  - NAS for my home network
   
  The goal is to make the SenseHat as the user interface:
   Output: 
@@ -16,6 +22,9 @@ Why - what is that about?
   Input/Control: 
   - via the joystick be able to reboot the Pi (or shut it down)
   - via the joystick rotate the display 
+  
+ The actual next steps and changes coming are maintained in the "issues" section
+  
   
 Files in the repo: 
 The truly only one that matters is the autostart_sensehat.py (which I'm autostarting with the Pi booting through a crontab entry)
