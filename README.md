@@ -12,7 +12,7 @@ Why - what is that about?
   - Wireguard VPN (client and server modes)
   - OpenVPN (client mode)
   - Pi-Hole DNS filter with "unbound"
-  - NAS for my home network
+  - NAS for my home network (active: miniDLNA)
   
  The goal is to make the SenseHat as the user interface:
   Output: 
