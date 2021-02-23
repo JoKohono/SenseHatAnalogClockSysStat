@@ -79,7 +79,7 @@ min_LED_current = min_true*min_stripe_length/60
 hour_stripeX =            [3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7,7,7,7,7,6,5,4]
 hour_stripeY =            [7,7,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,7,7]
 hour_stripe_color_day =   [B,B,B,B,B,B,G,G,Y,R,R,R,R,R,R,R,R,R,R,R,Y,G,G,G,G,G,B,B]
-hour_stripe_color_night = [O,O,O,b,O,O,O,O,O,O,r,O,O,O,O,O,O,r,O,O,O,O,O,O,g,O,O,O]
+hour_stripe_color_night = [O,O,O,b,O,b,O,O,O,O,0,O,O,O,O,O,O,0,O,O,O,O,O,O,0,O,b,O]
 hour_stripe_color = hour_stripe_color_day
 hour_stripe_length = len(hour_stripeX)
 hour_true = 0  #will effectively be between 1 and 24
@@ -94,7 +94,7 @@ def night_or_day():
     localtime = time.localtime(time.time())
     hour_true = localtime.tm_hour
 #    hour_true = 23  #to force night mode for testing purpose
-    if hour_true < 6 or hour_true > 20:
+    if hour_true < 5 or hour_true > 20:
         nightmode = True
         s.low_light = True
         hour_stripe_color = hour_stripe_color_night
