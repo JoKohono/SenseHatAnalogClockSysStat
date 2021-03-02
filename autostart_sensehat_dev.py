@@ -19,6 +19,9 @@ import sys
 
 # print(f"Name of the script      : {sys.argv[0]=}")
 # print(f"Arguments of the script : {sys.argv[1:]=}")
+print ('Number of arguments:', len(sys.argv), 'arguments.')
+print ('Argument List:', str(sys.argv))
+
 
 # log_level = ("NONE", "INFO", "ERROR", "DEBUG")
 loglevel_deep = True
@@ -45,6 +48,7 @@ s.low_light = False
 s.rotation = 90
 
 nightmode = False
+nightmodehours = [0, 1, 2, 3, 4, 5, 7, 9, 11, 13, 15, 17, 19, 21, 22, 23, 24]
 
 G = green = [0, 255, 0]
 g = green_low = [0, 100, 0]
@@ -101,17 +105,18 @@ def night_or_day():
     localtime = time.localtime(time.time())
     hour_true = localtime.tm_hour
 #    hour_true = 23  #to force night mode for testing purpose
-    if hour_true < 6 or hour_true > 20:
+#    if hour_true < 4 or hour_true > 5:
+    if hour_true in nightmodehours:    
         nightmode = True
         s.low_light = True
         hour_stripe_color = hour_stripe_color_night
-        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: night")
+        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: night ", hour_true)
         return(hour_stripe_color)
     else:
         nightmode = False
         s.low_light = False
         hour_stripe_color = hour_stripe_color_day
-        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: day")
+        if loglevel_deep: print(ticker(), "(",tfn,")", "--night-or-day says: day ", hour_true)
         return(hour_stripe_color)
 
 def wipe_sec_stripe():
@@ -393,17 +398,19 @@ while True:
                 sec_stripe_X_LED = int(sec_stripeX[sec_LED_current])
                 sec_stripe_Y_LED = int(sec_stripeY[sec_LED_current])
              
-                if sec_LED_current > sec_LED_old:   #make sure the previous LED in the stripe is left ON
-                    s.set_pixel((sec_stripeX[sec_LED_old]), sec_stripeY[sec_LED_old], sec_pixel_color)
-                elif sec_LED_current < sec_LED_old:   # means: we must have a new minute
-                    wipe_sec_stripe()
+                if hour_stripe_color == hour_stripe_color_day:
+                    if sec_LED_current > sec_LED_old:   #make sure the previous LED in the stripe is left ON
+                        s.set_pixel((sec_stripeX[sec_LED_old]), sec_stripeY[sec_LED_old], sec_pixel_color)
+                    elif sec_LED_current < sec_LED_old:   # means: we must have a new minute
+                        wipe_sec_stripe()
 
 #on comment for now to try to stop seconds from blinking
 #                 if (s.get_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current])) == nothing:
-                s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
+                    s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], sec_pixel_color)      
 #                 else:
 #                     s.set_pixel((sec_stripeX[sec_LED_current]), sec_stripeY[sec_LED_current], nothing) 
-
+                else:
+                   wipe_sec_stripe()
                 
                 #--now toggle on the hour-LED------------------
                 hour_LED_current = get_hour_pixel()
